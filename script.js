@@ -425,11 +425,15 @@ function toggleAuth() {
 }
 
 async function onPasscodeSubmit() {
+  if (passcodeSubmit.disabled) return;
   const passcode = passcodeInput.value.trim();
   if (!passcode) {
     setStatus(authStatus, "Please enter passcode.", false);
     return;
   }
+
+  setPasscodeLoading(true);
+  setStatus(authStatus, "Checking passcode…", true);
   state.authPasscode = passcode;
   try {
     await refreshData();
@@ -441,7 +445,16 @@ async function onPasscodeSubmit() {
     sessionStorage.removeItem("goldenDatesPasscode");
     setStatus(authStatus, `Access denied: ${err.message}`, false);
     toggleAuth();
+  } finally {
+    setPasscodeLoading(false);
   }
+}
+
+function setPasscodeLoading(isLoading) {
+  passcodeSubmit.disabled = isLoading;
+  passcodeInput.disabled = isLoading;
+  passcodeSubmit.textContent = isLoading ? "Checking…" : "Enter";
+  passcodeSubmit.classList.toggle("is-loading", isLoading);
 }
 
 nameInput.addEventListener("blur", () => {

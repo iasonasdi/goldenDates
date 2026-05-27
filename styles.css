@@ -410,6 +410,36 @@ button:hover {
   filter: brightness(1.08);
 }
 
+button:disabled {
+  cursor: wait;
+  opacity: 0.75;
+  transform: none;
+  filter: none;
+}
+
+button.is-loading {
+  position: relative;
+  padding-left: 2rem;
+}
+
+button.is-loading::before {
+  content: "";
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  margin-top: -7px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
