@@ -2,6 +2,8 @@
 
 Simple static app to coordinate group availability for a 3-day trip.
 
+Deployed in Github Pages
+
 ## Features
 
 - Each person enters:
