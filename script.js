@@ -77,6 +77,7 @@ const BACHELOR_TIPS = [
 let lastTipIndex = -1;
 let womanLoopIntervalId = null;
 let womanHideTimeoutId = null;
+let womanFirstTimeoutId = null;
 
 const WOMAN_FIRST_DELAY_MS = 7000;
 const WOMAN_REPEAT_MS = 180000;
@@ -107,7 +108,7 @@ function showWomanGif() {
 
 function startWomanLoop() {
   stopWomanLoop();
-  setTimeout(() => {
+  womanFirstTimeoutId = setTimeout(() => {
     if (!state.authPasscode) return;
     showWomanGif();
     womanLoopIntervalId = setInterval(showWomanGif, WOMAN_REPEAT_MS);
@@ -122,6 +123,10 @@ function stopWomanLoop() {
   if (womanHideTimeoutId) {
     clearTimeout(womanHideTimeoutId);
     womanHideTimeoutId = null;
+  }
+  if (womanFirstTimeoutId) {
+    clearTimeout(womanFirstTimeoutId);
+    womanFirstTimeoutId = null;
   }
   if (surpriseWoman) surpriseWoman.classList.remove("is-visible");
 }
