@@ -43,6 +43,8 @@ const tabAvailability = document.getElementById("tab-availability");
 const tabResults = document.getElementById("tab-results");
 const dailyTip = document.getElementById("daily-tip");
 const tipShuffle = document.getElementById("tip-shuffle");
+const surpriseWoman = document.getElementById("surprise-woman");
+const surpriseWomanImg = document.getElementById("surprise-woman-img");
 
 const BACHELOR_TIPS = [
   "Book flights on a Tuesday. Your liver won't care, but your wallet might send a thank-you note.",
@@ -73,6 +75,12 @@ const BACHELOR_TIPS = [
 ];
 
 let lastTipIndex = -1;
+let womanLoopIntervalId = null;
+let womanHideTimeoutId = null;
+
+const WOMAN_FIRST_DELAY_MS = 7000;
+const WOMAN_REPEAT_MS = 180000;
+const WOMAN_VISIBLE_MS = 12000;
 
 function showRandomTip() {
   if (!dailyTip || !BACHELOR_TIPS.length) return;
@@ -82,6 +90,40 @@ function showRandomTip() {
   }
   lastTipIndex = index;
   dailyTip.textContent = BACHELOR_TIPS[index];
+}
+
+function showWomanGif() {
+  if (!surpriseWoman || !surpriseWomanImg || !state.authPasscode) return;
+  surpriseWoman.classList.add("is-visible");
+  // Restart GIF playback each time it appears.
+  const src = surpriseWomanImg.src;
+  surpriseWomanImg.src = "";
+  surpriseWomanImg.src = src;
+  if (womanHideTimeoutId) clearTimeout(womanHideTimeoutId);
+  womanHideTimeoutId = setTimeout(() => {
+    surpriseWoman.classList.remove("is-visible");
+  }, WOMAN_VISIBLE_MS);
+}
+
+function startWomanLoop() {
+  stopWomanLoop();
+  setTimeout(() => {
+    if (!state.authPasscode) return;
+    showWomanGif();
+    womanLoopIntervalId = setInterval(showWomanGif, WOMAN_REPEAT_MS);
+  }, WOMAN_FIRST_DELAY_MS);
+}
+
+function stopWomanLoop() {
+  if (womanLoopIntervalId) {
+    clearInterval(womanLoopIntervalId);
+    womanLoopIntervalId = null;
+  }
+  if (womanHideTimeoutId) {
+    clearTimeout(womanHideTimeoutId);
+    womanHideTimeoutId = null;
+  }
+  if (surpriseWoman) surpriseWoman.classList.remove("is-visible");
 }
 
 const weekdayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -424,6 +466,8 @@ function toggleAuth() {
   const unlocked = Boolean(state.authPasscode);
   authScreen.classList.toggle("hidden", unlocked);
   appContent.classList.toggle("hidden", !unlocked);
+  if (unlocked) startWomanLoop();
+  else stopWomanLoop();
 }
 
 async function onPasscodeSubmit() {

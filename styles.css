@@ -683,6 +683,32 @@ button.is-loading::before {
   max-width: 560px;
 }
 
+.surprise-woman {
+  position: fixed;
+  right: 18px;
+  bottom: 14px;
+  width: min(210px, 28vw);
+  max-height: 52vh;
+  opacity: 0;
+  transform: translateY(16px) scale(0.96);
+  transition: opacity 1.2s ease, transform 1.2s ease;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.surprise-woman img {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 0 18px rgba(0, 0, 0, 0.55));
+  mix-blend-mode: screen;
+}
+
+.surprise-woman.is-visible {
+  opacity: 0.78;
+  transform: translateY(0) scale(1);
+}
+
 @media (max-width: 768px) {
   .dancer-svg {
     width: 66px;
@@ -701,5 +727,11 @@ button.is-loading::before {
 
   .party-spotlights .spotlight {
     width: 130px;
+  }
+
+  .surprise-woman {
+    width: min(145px, 34vw);
+    right: 8px;
+    bottom: 8px;
   }
 }
