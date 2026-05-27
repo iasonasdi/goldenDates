@@ -25,8 +25,6 @@ const tripSuggestions = document.getElementById("trip-suggestions");
 const overviewCalendar = document.getElementById("overview-calendar");
 const overviewMonthLabel = document.getElementById("overview-month-label");
 
-const seasonStartInput = document.getElementById("season-start");
-const seasonEndInput = document.getElementById("season-end");
 const viewStartInput = document.getElementById("view-start");
 const viewEndInput = document.getElementById("view-end");
 const nameInput = document.getElementById("name");
@@ -37,6 +35,54 @@ const unavailableSelected = document.getElementById("unavailable-selected");
 const preferredPicker = document.getElementById("preferred-picker");
 const preferredMonthLabel = document.getElementById("preferred-month-label");
 const preferredSelected = document.getElementById("preferred-selected");
+const statVoted = document.getElementById("stat-voted");
+const statBestDay = document.getElementById("stat-best-day");
+const statBestTrip = document.getElementById("stat-best-trip");
+const tabButtons = document.querySelectorAll(".tab");
+const tabAvailability = document.getElementById("tab-availability");
+const tabResults = document.getElementById("tab-results");
+const dailyTip = document.getElementById("daily-tip");
+const tipShuffle = document.getElementById("tip-shuffle");
+
+const BACHELOR_TIPS = [
+  "Book flights on a Tuesday. Your liver won't care, but your wallet might send a thank-you note.",
+  "If nobody can make the same three days, that's not a scheduling bug — that's democracy.",
+  "Preferred dates are wishes. Unavailable dates are facts. Plan accordingly.",
+  "Rule of three: one legendary night, one recovery day, one group photo you'll all deny.",
+  "Hydration isn't a vibe — it's a survival strategy with better lighting.",
+  "The groom wins when the group shows up. Everyone else wins when someone actually fills this calendar.",
+  "Good bachelor trips are planned like heists: dates first, chaos later.",
+  "Open bar math: one drink per hour is a budget. One drink per minute is a memoir.",
+  "Send your availability early. The best weekends vanish faster than free appetizers.",
+  "Group chats propose. Shared calendars decide. This app is the grown-up table.",
+  "Pack light, tip well, and never let the groom pay for his own surprise.",
+  "If half the group is free and half isn't, you're not unlucky — you're negotiating.",
+  "A great trip needs three things: aligned dates, charged phones, and one responsible adult (rotate daily).",
+  "Sunscreen by day, stories by night, apologies by Monday.",
+  "The perfect bachelor weekend isn't the wildest one — it's the one everyone can actually attend.",
+  "Mark your unavailable dates like you're protecting treasure. Because sleep is treasure.",
+  "Confetti is temporary. A well-picked weekend is legendary.",
+  "When in doubt, pick the dates with the most green on the calendar. Science-ish.",
+  "Bring cash, bring ID, bring your availability — in that order of importance for planning.",
+  "The best man plans the trip. The best friends show up on time. Both are rare birds.",
+  "Never trust a plan made after midnight unless it includes breakfast and a nap slot.",
+  "Three days is enough for glory, recovery, and one story that starts with 'Okay, legally…'",
+  "Vote with your calendar, not with 'I'm probably free.' Probably is how trips die.",
+  "If someone says 'any weekend works,' they mean it until you pick one.",
+  "Celebrate the groom. Document responsibly. Delete strategically.",
+];
+
+let lastTipIndex = -1;
+
+function showRandomTip() {
+  if (!dailyTip || !BACHELOR_TIPS.length) return;
+  let index = Math.floor(Math.random() * BACHELOR_TIPS.length);
+  if (BACHELOR_TIPS.length > 1 && index === lastTipIndex) {
+    index = (index + 1) % BACHELOR_TIPS.length;
+  }
+  lastTipIndex = index;
+  dailyTip.textContent = BACHELOR_TIPS[index];
+}
 
 const weekdayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -65,7 +111,9 @@ function setStatus(el, text, ok = true) {
 }
 
 function inferDateBounds(entries) {
-  const allDates = entries.flatMap((e) => [e.seasonStart, e.seasonEnd]).filter(Boolean);
+  const allDates = entries
+    .flatMap((e) => [...(e.unavailableDates || []), ...(e.preferredDates || [])])
+    .filter(Boolean);
   if (!allDates.length) {
     const now = new Date();
     const start = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -125,36 +173,95 @@ function renderPicker(type) {
   selectionLabel.textContent = chosen.length ? `Selected: ${chosen.join(", ")}` : "No dates selected yet.";
 }
 
+function getDayAvailability(entries, iso) {
+  const total = entries.length;
+  if (!total) return { total: 0, unavailable: 0, available: 0, preferred: 0 };
+  let unavailable = 0;
+  let preferred = 0;
+  entries.forEach((e) => {
+    if ((e.unavailableDates || []).includes(iso)) unavailable += 1;
+    if ((e.preferredDates || []).includes(iso)) preferred += 1;
+  });
+  return { total, unavailable, available: total - unavailable, preferred };
+}
+
+function getHeatClass(available, total) {
+  if (!total) return "heat-empty";
+  const ratio = available / total;
+  if (ratio >= 0.9) return "heat-best";
+  if (ratio >= 0.7) return "heat-good";
+  if (ratio >= 0.5) return "heat-mixed";
+  return "heat-worst";
+}
+
+function renderGroupStats(entries) {
+  const total = entries.length;
+  statVoted.textContent = String(total);
+  if (!total) {
+    statBestDay.textContent = "—";
+    statBestTrip.textContent = "—";
+    return;
+  }
+
+  const { start, end } = inferDateBounds(entries);
+  const days = dateRange(start, end);
+  let bestDay = null;
+  let bestAvailable = -1;
+  days.forEach((iso) => {
+    const { available } = getDayAvailability(entries, iso);
+    if (available > bestAvailable) {
+      bestAvailable = available;
+      bestDay = iso;
+    }
+  });
+  statBestDay.textContent = bestDay ? `${bestDay.slice(5)} (${bestAvailable}/${total})` : "—";
+
+  const trips = findBestTrips(entries);
+  statBestTrip.textContent = trips.length
+    ? `${trips[0].start.slice(5)} → ${trips[0].end.slice(5)} (${trips[0].availableCount}/${total})`
+    : "—";
+}
+
 function renderOverviewCalendar(entries) {
   const month = state.overviewMonth;
   overviewMonthLabel.textContent = toMonthLabel(month);
-
-  const unavailCountByDay = new Map();
-  const prefCountByDay = new Map();
-  entries.forEach((e) => {
-    (e.unavailableDates || []).forEach((d) => unavailCountByDay.set(d, (unavailCountByDay.get(d) || 0) + 1));
-    (e.preferredDates || []).forEach((d) => prefCountByDay.set(d, (prefCountByDay.get(d) || 0) + 1));
-  });
+  const total = entries.length;
 
   const header = weekdayLabels.map((w) => `<div class="weekday-cell">${w}</div>`).join("");
   const cells = monthCells(month)
     .map((day) => {
       const iso = toIsoDate(day);
       const outside = day.getMonth() !== month.getMonth();
-      const unavailableCount = unavailCountByDay.get(iso) || 0;
-      const preferredCount = prefCountByDay.get(iso) || 0;
-      let cls = "day-btn";
-      if (unavailableCount > 0) cls += " selected-unavailable";
-      else if (preferredCount > 0) cls += " selected-preferred";
-      if (outside) cls += " outside";
-      return `<button type="button" class="${cls}" title="${iso}">
-        <span>${day.getDate()}</span>
-        <span class="overview-cell-line">No: ${unavailableCount}</span>
-        <span class="overview-cell-line">Pref: ${preferredCount}</span>
-      </button>`;
+      const { available, preferred } = getDayAvailability(entries, iso);
+      const heat = getHeatClass(available, total);
+      const cls = `day-btn overview-day ${heat}${outside ? " outside" : ""}`;
+      const freeLabel = total ? `${available}/${total} free` : "No votes";
+      return `<div class="${cls}" title="${iso}: ${freeLabel}">
+        <span class="overview-day-num">${day.getDate()}</span>
+        <span class="overview-cell-line">${freeLabel}</span>
+        ${preferred ? `<span class="overview-cell-line">★ ${preferred}</span>` : ""}
+      </div>`;
     })
     .join("");
   overviewCalendar.innerHTML = `${header}${cells}`;
+}
+
+function renderResults(entries) {
+  renderGroupStats(entries);
+  renderTripSuggestions();
+  renderOverviewCalendar(entries);
+  drawTimeline(entries);
+}
+
+function switchTab(tabName) {
+  const isAvailability = tabName === "availability";
+  tabAvailability.classList.toggle("hidden", !isAvailability);
+  tabAvailability.classList.toggle("active", isAvailability);
+  tabResults.classList.toggle("hidden", isAvailability);
+  tabResults.classList.toggle("active", !isAvailability);
+  tabButtons.forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.tab === tabName);
+  });
 }
 
 async function apiFetch(path = "") {
@@ -284,8 +391,6 @@ function renderTripSuggestions() {
 
 function fillFormFromEntry(entry) {
   if (!entry) return;
-  seasonStartInput.value = entry.seasonStart || "";
-  seasonEndInput.value = entry.seasonEnd || "";
   state.selectedUnavailable = new Set(entry.unavailableDates || []);
   state.selectedPreferred = new Set(entry.preferredDates || []);
   renderPicker("unavailable");
@@ -298,17 +403,13 @@ async function refreshData() {
   }
   try {
     if (!API_URL) {
-      drawTimeline(state.entries);
-      renderTripSuggestions();
-      renderOverviewCalendar(state.entries);
+      renderResults(state.entries);
       setStatus(dataStatus, "Using local storage mode. Set API_URL for shared data.", true);
       return true;
     }
     const payload = await apiFetch();
     state.entries = Array.isArray(payload.entries) ? payload.entries : [];
-    drawTimeline(state.entries);
-    renderTripSuggestions();
-    renderOverviewCalendar(state.entries);
+    renderResults(state.entries);
     setStatus(dataStatus, `Loaded ${state.entries.length} entries.`, true);
     return true;
   } catch (err) {
@@ -353,20 +454,12 @@ nameInput.addEventListener("blur", () => {
 form.addEventListener("submit", async (ev) => {
   ev.preventDefault();
   const name = nameInput.value.trim();
-  const seasonStart = seasonStartInput.value;
-  const seasonEnd = seasonEndInput.value;
   if (!name) {
     setStatus(formStatus, "Name is required.", false);
     return;
   }
-  if (!seasonStart || !seasonEnd || seasonStart > seasonEnd) {
-    setStatus(formStatus, "Please provide a valid trip season range.", false);
-    return;
-  }
   const entry = {
     name,
-    seasonStart,
-    seasonEnd,
     unavailableDates: [...state.selectedUnavailable].sort(),
     preferredDates: [...state.selectedPreferred].sort(),
     updatedAt: new Date().toISOString(),
@@ -375,6 +468,7 @@ form.addEventListener("submit", async (ev) => {
     const result = await apiUpsert(entry);
     setStatus(formStatus, `Saved successfully (${result.mode || "ok"}).`, true);
     await refreshData();
+    switchTab("results");
   } catch (err) {
     setStatus(formStatus, `Save failed: ${err.message}`, false);
   }
@@ -394,8 +488,12 @@ document.body.addEventListener("click", (ev) => {
 
 document.getElementById("refresh-data").addEventListener("click", refreshData);
 document.getElementById("suggest-trips").addEventListener("click", renderTripSuggestions);
-viewStartInput.addEventListener("change", () => drawTimeline(state.entries));
-viewEndInput.addEventListener("change", () => drawTimeline(state.entries));
+viewStartInput.addEventListener("change", () => renderResults(state.entries));
+viewEndInput.addEventListener("change", () => renderResults(state.entries));
+
+tabButtons.forEach((btn) => {
+  btn.addEventListener("click", () => switchTab(btn.dataset.tab));
+});
 
 document.getElementById("unavailable-prev").addEventListener("click", () => {
   state.unavailableMonth = new Date(state.unavailableMonth.getFullYear(), state.unavailableMonth.getMonth() - 1, 1);
@@ -416,16 +514,19 @@ document.getElementById("preferred-next").addEventListener("click", () => {
 document.getElementById("overview-prev").addEventListener("click", () => {
   state.overviewMonth = new Date(state.overviewMonth.getFullYear(), state.overviewMonth.getMonth() - 1, 1);
   renderOverviewCalendar(state.entries);
+  renderGroupStats(state.entries);
 });
 document.getElementById("overview-next").addEventListener("click", () => {
   state.overviewMonth = new Date(state.overviewMonth.getFullYear(), state.overviewMonth.getMonth() + 1, 1);
   renderOverviewCalendar(state.entries);
+  renderGroupStats(state.entries);
 });
 
 passcodeSubmit.addEventListener("click", onPasscodeSubmit);
 passcodeInput.addEventListener("keydown", (ev) => {
   if (ev.key === "Enter") onPasscodeSubmit();
 });
+tipShuffle.addEventListener("click", showRandomTip);
 
 state.unavailableMonth = normalizeMonth(new Date());
 state.preferredMonth = normalizeMonth(new Date());
@@ -433,6 +534,7 @@ state.overviewMonth = normalizeMonth(new Date());
 renderPicker("unavailable");
 renderPicker("preferred");
 renderOverviewCalendar([]);
+showRandomTip();
 state.authPasscode = sessionStorage.getItem("goldenDatesPasscode") || "";
 toggleAuth();
 if (state.authPasscode) {

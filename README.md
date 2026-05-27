@@ -8,7 +8,6 @@ Deployed in Github Pages
 
 - Each person enters:
   - name
-  - season start/end
   - dates they **cannot** come (click on calendar)
   - preferred dates (click on calendar)
 - Same person can edit their data by entering the same name.

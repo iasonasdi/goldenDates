@@ -7,6 +7,65 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
+    <div class="party-bg" aria-hidden="true">
+      <div class="party-glow party-glow-left"></div>
+      <div class="party-glow party-glow-right"></div>
+
+      <div class="party-confetti">
+        <span></span><span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span><span></span>
+      </div>
+
+      <div class="party-dancers">
+        <div class="dancer dancer-1">
+          <svg viewBox="0 0 64 120" class="dancer-svg">
+            <circle cx="32" cy="14" r="10" />
+            <path d="M18 28 Q32 22 46 28 L42 58 Q32 52 22 58 Z" />
+            <path d="M22 58 L14 96 M42 58 L50 96 M28 58 L24 118 M36 58 L40 118" />
+          </svg>
+        </div>
+        <div class="dancer dancer-2">
+          <svg viewBox="0 0 64 120" class="dancer-svg">
+            <circle cx="32" cy="14" r="10" />
+            <path d="M16 30 Q32 20 48 30 L44 60 Q32 54 20 60 Z" />
+            <path d="M20 60 L10 98 M44 60 L54 98 M26 60 L22 118 M38 60 L42 118" />
+          </svg>
+        </div>
+        <div class="dancer dancer-3">
+          <svg viewBox="0 0 64 120" class="dancer-svg">
+            <circle cx="32" cy="14" r="10" />
+            <path d="M20 26 Q32 18 44 26 L40 56 Q32 50 24 56 Z" />
+            <path d="M24 56 L18 94 M40 56 L46 94 M30 56 L28 118 M34 56 L36 118" />
+          </svg>
+        </div>
+        <div class="dancer dancer-4">
+          <svg viewBox="0 0 64 120" class="dancer-svg">
+            <circle cx="32" cy="14" r="10" />
+            <path d="M18 28 Q32 22 46 28 L42 58 Q32 52 22 58 Z" />
+            <path d="M22 58 L14 96 M42 58 L50 96 M28 58 L24 118 M36 58 L40 118" />
+          </svg>
+        </div>
+      </div>
+
+      <div class="party-floaties">
+        <span class="floaty floaty-1">🍾</span>
+        <span class="floaty floaty-2">🥂</span>
+        <span class="floaty floaty-3">🍸</span>
+        <span class="floaty floaty-4">🍺</span>
+        <span class="floaty floaty-5">🎲</span>
+        <span class="floaty floaty-6">🎰</span>
+      </div>
+
+      <div class="party-stakes">
+        <span class="chip chip-red">100</span>
+        <span class="chip chip-blue">500</span>
+        <span class="chip chip-green">25</span>
+        <span class="chip chip-black">ALL IN</span>
+        <span class="chip chip-gold">🎉</span>
+      </div>
+    </div>
+
     <main id="auth-screen" class="container auth-screen">
       <section class="card">
         <h1>Golden Dates</h1>
@@ -21,29 +80,24 @@
     </main>
 
     <main id="app-content" class="container hidden">
-      <header>
+      <header class="party-header">
+        <p class="party-badge">🎉 Bachelor Party Mode 🎉</p>
         <h1>Barcheloreta Stathi</h1>
         <p>Pick dates you cannot come and your preferred dates.</p>
       </header>
 
-      <section class="card">
+      <nav class="tabs" role="tablist">
+        <button type="button" class="tab active" data-tab="availability" role="tab">Add availability</button>
+        <button type="button" class="tab" data-tab="results" role="tab">Results</button>
+      </nav>
+
+      <section id="tab-availability" class="tab-panel active card">
         <h2>Your Availability</h2>
         <form id="availability-form">
           <label>
             Name
             <input id="name" name="name" required maxlength="64" placeholder="Your name" />
           </label>
-
-          <div class="grid">
-            <label>
-              Trip season start
-              <input id="season-start" name="seasonStart" type="date" required />
-            </label>
-            <label>
-              Trip season end
-              <input id="season-end" name="seasonEnd" type="date" required />
-            </label>
-          </div>
 
           <div class="grid">
             <div>
@@ -73,8 +127,24 @@
         </form>
       </section>
 
-      <section class="card">
-        <h2>Group Planner</h2>
+      <section id="tab-results" class="tab-panel card hidden">
+        <h2>Group results</h2>
+
+        <div id="group-stats" class="stats-grid">
+          <article class="stat-card">
+            <span id="stat-voted" class="stat-value">0</span>
+            <span class="stat-label">People voted</span>
+          </article>
+          <article class="stat-card">
+            <span id="stat-best-day" class="stat-value">—</span>
+            <span class="stat-label">Best day (free)</span>
+          </article>
+          <article class="stat-card">
+            <span id="stat-best-trip" class="stat-value">—</span>
+            <span class="stat-label">Best 3-day window</span>
+          </article>
+        </div>
+
         <div class="grid">
           <label>
             Display from
@@ -91,22 +161,31 @@
         </div>
         <p id="data-status" class="status"></p>
         <div id="trip-suggestions"></div>
-        <div id="timeline"></div>
-        <h3>Month calendar overview</h3>
+
+        <h3>Group availability calendar</h3>
+        <p class="legend">
+          <span class="legend-item heat-best">Best — most can come</span>
+          <span class="legend-item heat-good">Good</span>
+          <span class="legend-item heat-mixed">Mixed</span>
+          <span class="legend-item heat-worst">Hard — few can come</span>
+        </p>
         <div class="date-picker-controls">
           <button id="overview-prev" type="button">Prev month</button>
           <span id="overview-month-label"></span>
           <button id="overview-next" type="button">Next month</button>
         </div>
         <div id="overview-calendar" class="month-grid overview-grid"></div>
+
+        <h3>Availability by person (Gantt)</h3>
+        <div id="timeline"></div>
       </section>
 
-      <section class="card small">
-        <h2>Backend setup</h2>
-        <p>
-          Set your API URL in <code>script.js</code> (constant <code>API_URL</code>).
-          Example backend is in <code>apps-script/Code.gs</code>.
-        </p>
+      <section class="card tip-card">
+        <div class="tip-header">
+          <h2>Tip of the moment</h2>
+          <button id="tip-shuffle" type="button" class="tip-shuffle">Another one</button>
+        </div>
+        <p id="daily-tip" class="daily-tip"></p>
       </section>
     </main>
 
