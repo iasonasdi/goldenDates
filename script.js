@@ -82,7 +82,7 @@ let womanHideTimeoutId = null;
 let womanFirstTimeoutId = null;
 
 const WOMAN_FIRST_DELAY_MS = 7000;
-const WOMAN_REPEAT_MS = 180000;
+const WOMAN_REPEAT_MS = 60000;
 const WOMAN_VISIBLE_MS = 12000;
 
 function showRandomTip() {
