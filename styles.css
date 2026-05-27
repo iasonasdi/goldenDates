@@ -1,0 +1,240 @@
+:root {
+  color-scheme: light dark;
+  --bg: #0f172a;
+  --panel: #1e293b;
+  --panel-light: #ffffff;
+  --text: #e2e8f0;
+  --text-light: #0f172a;
+  --accent: #38bdf8;
+  --danger: #f87171;
+  --ok: #22c55e;
+  --preferred: #facc15;
+  --border: #64748b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, Segoe UI, Roboto, Arial, sans-serif;
+  background: #0b1120;
+  color: var(--text);
+}
+
+.hidden {
+  display: none;
+}
+
+.container {
+  width: min(1100px, 96vw);
+  margin: 24px auto 40px;
+  display: grid;
+  gap: 16px;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid #334155;
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.small p {
+  margin: 0;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0 0 10px;
+}
+
+p {
+  margin: 6px 0 12px;
+}
+
+form,
+label {
+  display: block;
+}
+
+label {
+  margin-bottom: 12px;
+}
+
+input,
+textarea,
+button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 6px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #0f172a;
+  color: var(--text);
+}
+
+textarea {
+  resize: vertical;
+}
+
+button {
+  cursor: pointer;
+  background: #0ea5e9;
+  color: white;
+  border: none;
+  font-weight: 600;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 10px 0;
+}
+
+.controls button {
+  width: auto;
+}
+
+.date-picker-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.date-picker-controls button {
+  width: auto;
+  padding: 6px 10px;
+}
+
+.month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(30px, 1fr));
+  gap: 4px;
+}
+
+.weekday-cell {
+  text-align: center;
+  font-size: 11px;
+  color: #93c5fd;
+}
+
+.day-btn {
+  border: 1px solid #475569;
+  background: #0f172a;
+  color: var(--text);
+  border-radius: 6px;
+  min-height: 34px;
+  padding: 4px;
+}
+
+.day-btn.outside {
+  opacity: 0.35;
+}
+
+.day-btn.selected-unavailable {
+  background: color-mix(in srgb, var(--danger) 60%, transparent);
+}
+
+.day-btn.selected-preferred {
+  background: color-mix(in srgb, var(--preferred) 65%, transparent);
+}
+
+.selected-list {
+  font-size: 12px;
+  color: #cbd5e1;
+  margin: 8px 0 0;
+}
+
+.overview-grid .day-btn {
+  min-height: 58px;
+  text-align: left;
+}
+
+.overview-cell-line {
+  display: block;
+  font-size: 10px;
+  color: #cbd5e1;
+}
+
+.status {
+  min-height: 24px;
+  font-size: 0.95rem;
+}
+
+.status.error {
+  color: var(--danger);
+}
+
+.status.ok {
+  color: var(--ok);
+}
+
+#trip-suggestions {
+  margin: 8px 0 16px;
+}
+
+.trip-card {
+  border: 1px solid #475569;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 8px;
+  background: #0f172a;
+}
+
+.trip-score {
+  font-weight: 700;
+}
+
+#timeline {
+  overflow-x: auto;
+}
+
+.timeline-table {
+  border-collapse: collapse;
+  min-width: 900px;
+}
+
+.timeline-table th,
+.timeline-table td {
+  border: 1px solid #475569;
+  padding: 4px 6px;
+  text-align: center;
+  font-size: 12px;
+}
+
+.timeline-table th.sticky,
+.timeline-table td.sticky {
+  position: sticky;
+  left: 0;
+  background: #0f172a;
+  z-index: 1;
+  text-align: left;
+  min-width: 140px;
+}
+
+.day-unavailable {
+  background: color-mix(in srgb, var(--danger) 55%, transparent);
+}
+
+.day-preferred {
+  background: color-mix(in srgb, var(--preferred) 60%, transparent);
+}
+
+.day-free {
+  background: color-mix(in srgb, var(--ok) 38%, transparent);
+}
+
+.auth-screen {
+  max-width: 560px;
+}

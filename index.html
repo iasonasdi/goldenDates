@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Golden Dates - Group Vacation Planner</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main id="auth-screen" class="container auth-screen">
+      <section class="card">
+        <h1>Golden Dates</h1>
+        <p>Enter passcode to continue.</p>
+        <label>
+          Passcode
+          <input id="passcode-input" type="password" placeholder="Enter passcode" />
+        </label>
+        <button id="passcode-submit" type="button">Enter</button>
+        <p id="auth-status" class="status"></p>
+      </section>
+    </main>
+
+    <main id="app-content" class="container hidden">
+      <header>
+        <h1>Golden Dates</h1>
+        <p>Pick dates you cannot come and your preferred dates.</p>
+      </header>
+
+      <section class="card">
+        <h2>Your Availability</h2>
+        <form id="availability-form">
+          <label>
+            Name
+            <input id="name" name="name" required maxlength="64" placeholder="Your name" />
+          </label>
+
+          <div class="grid">
+            <label>
+              Trip season start
+              <input id="season-start" name="seasonStart" type="date" required />
+            </label>
+            <label>
+              Trip season end
+              <input id="season-end" name="seasonEnd" type="date" required />
+            </label>
+          </div>
+
+          <div class="grid">
+            <div>
+              <h3>Unavailable dates (click days)</h3>
+              <div class="date-picker-controls">
+                <button id="unavailable-prev" type="button">Prev month</button>
+                <span id="unavailable-month-label"></span>
+                <button id="unavailable-next" type="button">Next month</button>
+              </div>
+              <div id="unavailable-picker" class="month-grid"></div>
+              <p id="unavailable-selected" class="selected-list"></p>
+            </div>
+            <div>
+              <h3>Preferred dates (click days)</h3>
+              <div class="date-picker-controls">
+                <button id="preferred-prev" type="button">Prev month</button>
+                <span id="preferred-month-label"></span>
+                <button id="preferred-next" type="button">Next month</button>
+              </div>
+              <div id="preferred-picker" class="month-grid"></div>
+              <p id="preferred-selected" class="selected-list"></p>
+            </div>
+          </div>
+
+          <button type="submit">Save / Update</button>
+          <p id="form-status" class="status"></p>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Group Planner</h2>
+        <div class="grid">
+          <label>
+            Display from
+            <input id="view-start" type="date" />
+          </label>
+          <label>
+            Display to
+            <input id="view-end" type="date" />
+          </label>
+        </div>
+        <div class="controls">
+          <button id="refresh-data" type="button">Refresh data</button>
+          <button id="suggest-trips" type="button">Find best 3-day trips</button>
+        </div>
+        <p id="data-status" class="status"></p>
+        <div id="trip-suggestions"></div>
+        <div id="timeline"></div>
+        <h3>Month calendar overview</h3>
+        <div class="date-picker-controls">
+          <button id="overview-prev" type="button">Prev month</button>
+          <span id="overview-month-label"></span>
+          <button id="overview-next" type="button">Next month</button>
+        </div>
+        <div id="overview-calendar" class="month-grid overview-grid"></div>
+      </section>
+
+      <section class="card small">
+        <h2>Backend setup</h2>
+        <p>
+          Set your API URL in <code>script.js</code> (constant <code>API_URL</code>).
+          Example backend is in <code>apps-script/Code.gs</code>.
+        </p>
+      </section>
+    </main>
+
+    <script src="./script.js"></script>
+  </body>
+</html>
