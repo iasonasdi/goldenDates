@@ -19,9 +19,9 @@ const authStatus = document.getElementById("auth-status");
 
 const form = document.getElementById("availability-form");
 const formStatus = document.getElementById("form-status");
+const saveAvailabilityButton = form.querySelector('button[type="submit"]');
 const dataStatus = document.getElementById("data-status");
 const timeline = document.getElementById("timeline");
-const tripSuggestions = document.getElementById("trip-suggestions");
 const overviewCalendar = document.getElementById("overview-calendar");
 const overviewMonthLabel = document.getElementById("overview-month-label");
 
@@ -295,7 +295,6 @@ function renderOverviewCalendar(entries) {
 
 function renderResults(entries) {
   renderGroupStats(entries);
-  renderTripSuggestions();
   renderOverviewCalendar(entries);
   drawTimeline(entries);
 }
@@ -420,24 +419,6 @@ function findBestTrips(entries) {
   return windows.slice(0, 7);
 }
 
-function renderTripSuggestions() {
-  const windows = findBestTrips(state.entries);
-  if (!windows.length) {
-    tripSuggestions.innerHTML = "<p>No possible windows to suggest yet.</p>";
-    return;
-  }
-  tripSuggestions.innerHTML = windows
-    .map(
-      (w, idx) => `<article class="trip-card">
-        <div><strong>#${idx + 1}: ${w.start} to ${w.end}</strong></div>
-        <div class="trip-score">${w.availableCount} available, ${w.unavailableCount} unavailable</div>
-        <div>Preference score: ${w.preferenceScore}</div>
-        <div>Missing: ${w.unavailableNames.length ? w.unavailableNames.join(", ") : "Nobody"}</div>
-      </article>`,
-    )
-    .join("");
-}
-
 function fillFormFromEntry(entry) {
   if (!entry) return;
   state.selectedUnavailable = new Set(entry.unavailableDates || []);
@@ -508,6 +489,13 @@ function setPasscodeLoading(isLoading) {
   passcodeSubmit.classList.toggle("is-loading", isLoading);
 }
 
+function setSaveAvailabilityLoading(isLoading) {
+  if (!saveAvailabilityButton) return;
+  saveAvailabilityButton.disabled = isLoading;
+  saveAvailabilityButton.textContent = isLoading ? "Saving…" : "Save / Update";
+  saveAvailabilityButton.classList.toggle("is-loading", isLoading);
+}
+
 nameInput.addEventListener("blur", () => {
   const name = nameInput.value.trim().toLowerCase();
   if (!name) return;
@@ -517,6 +505,7 @@ nameInput.addEventListener("blur", () => {
 
 form.addEventListener("submit", async (ev) => {
   ev.preventDefault();
+  if (saveAvailabilityButton && saveAvailabilityButton.disabled) return;
   const name = nameInput.value.trim();
   if (!name) {
     setStatus(formStatus, "Name is required.", false);
@@ -528,6 +517,7 @@ form.addEventListener("submit", async (ev) => {
     preferredDates: [...state.selectedPreferred].sort(),
     updatedAt: new Date().toISOString(),
   };
+  setSaveAvailabilityLoading(true);
   try {
     const result = await apiUpsert(entry);
     setStatus(formStatus, `Saved successfully (${result.mode || "ok"}).`, true);
@@ -535,6 +525,8 @@ form.addEventListener("submit", async (ev) => {
     switchTab("results");
   } catch (err) {
     setStatus(formStatus, `Save failed: ${err.message}`, false);
+  } finally {
+    setSaveAvailabilityLoading(false);
   }
 });
 
@@ -551,7 +543,6 @@ document.body.addEventListener("click", (ev) => {
 });
 
 document.getElementById("refresh-data").addEventListener("click", refreshData);
-document.getElementById("suggest-trips").addEventListener("click", renderTripSuggestions);
 viewStartInput.addEventListener("change", () => renderResults(state.entries));
 viewEndInput.addEventListener("change", () => renderResults(state.entries));
 

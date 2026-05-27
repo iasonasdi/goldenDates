@@ -362,6 +362,7 @@ body {
   padding: 4px 8px;
   border-radius: 6px;
   border: 1px solid #475569;
+  white-space: normal;
 }
 
 .overview-day {
@@ -546,6 +547,7 @@ button.is-loading::before {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
   margin-bottom: 8px;
 }
 
@@ -635,6 +637,8 @@ button.is-loading::before {
 
 #timeline {
   overflow-x: auto;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
 }
 
 .timeline-table {
@@ -710,6 +714,56 @@ button.is-loading::before {
 }
 
 @media (max-width: 768px) {
+  .container {
+    width: min(98vw, 100%);
+    margin: 12px auto 24px;
+    gap: 12px;
+  }
+
+  .card {
+    padding: 12px;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .legend {
+    gap: 6px;
+  }
+
+  .legend-item {
+    font-size: 0.68rem;
+    padding: 3px 6px;
+  }
+
+  .month-grid {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+  }
+
+  .overview-day {
+    min-height: 50px;
+  }
+
+  .overview-cell-line {
+    font-size: 9px;
+  }
+
+  .timeline-table {
+    min-width: 680px;
+  }
+
+  .timeline-table th,
+  .timeline-table td {
+    font-size: 11px;
+    padding: 3px 4px;
+  }
+
+  .timeline-table th.sticky,
+  .timeline-table td.sticky {
+    min-width: 100px;
+  }
+
   .dancer-svg {
     width: 66px;
     height: 112px;
