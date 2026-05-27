@@ -286,7 +286,9 @@ async function apiUpsert(payload) {
   }
   const res = await fetch(API_URL, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    // Apps Script web apps work best with simple CORS requests.
+    // text/plain avoids browser preflight (OPTIONS) from GitHub Pages origin.
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
     body: JSON.stringify({ ...payload, passcode: state.authPasscode }),
   });
   if (!res.ok) throw new Error(`Save failed: ${res.status}`);
