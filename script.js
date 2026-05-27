@@ -8,6 +8,7 @@ const state = {
   unavailableMonth: new Date(),
   preferredMonth: new Date(),
   overviewMonth: new Date(),
+  ganttWeekStart: null,
   authPasscode: "",
 };
 
@@ -24,6 +25,7 @@ const dataStatus = document.getElementById("data-status");
 const timeline = document.getElementById("timeline");
 const overviewCalendar = document.getElementById("overview-calendar");
 const overviewMonthLabel = document.getElementById("overview-month-label");
+const weekLabel = document.getElementById("week-label");
 
 const viewStartInput = document.getElementById("view-start");
 const viewEndInput = document.getElementById("view-end");
@@ -177,6 +179,14 @@ function normalizeMonth(date) {
   return new Date(date.getFullYear(), date.getMonth(), 1);
 }
 
+function startOfWeek(dateLike) {
+  const date = new Date(dateLike);
+  date.setHours(0, 0, 0, 0);
+  const day = date.getDay();
+  date.setDate(date.getDate() - day);
+  return date;
+}
+
 function monthCells(monthDate) {
   const first = normalizeMonth(monthDate);
   const firstWeekday = first.getDay();
@@ -234,10 +244,9 @@ function getDayAvailability(entries, iso) {
 
 function getHeatClass(available, total) {
   if (!total) return "heat-empty";
-  const ratio = available / total;
-  if (ratio >= 0.9) return "heat-best";
-  if (ratio >= 0.7) return "heat-good";
-  if (ratio >= 0.5) return "heat-mixed";
+  if (available === total) return "heat-best";
+  if (available >= total - 1) return "heat-good";
+  if (available >= Math.ceil(total / 2)) return "heat-mixed";
   return "heat-worst";
 }
 
@@ -346,6 +355,7 @@ async function apiUpsert(payload) {
 function drawTimeline(entries) {
   if (!entries.length) {
     timeline.innerHTML = "<p>No entries yet.</p>";
+    if (weekLabel) weekLabel.textContent = "";
     return;
   }
   const { start, end } = inferDateBounds(entries);
@@ -353,7 +363,32 @@ function drawTimeline(entries) {
   if (!viewEndInput.value) viewEndInput.value = end;
   const displayStart = viewStartInput.value || start;
   const displayEnd = viewEndInput.value || end;
-  const days = dateRange(displayStart, displayEnd);
+
+  if (!state.ganttWeekStart) {
+    state.ganttWeekStart = startOfWeek(`${displayStart}T00:00:00`);
+  }
+  const selectedWeekStart = startOfWeek(state.ganttWeekStart);
+  const selectedWeekEnd = new Date(selectedWeekStart);
+  selectedWeekEnd.setDate(selectedWeekStart.getDate() + 6);
+
+  const boundedStart = new Date(`${displayStart}T00:00:00`);
+  const boundedEnd = new Date(`${displayEnd}T00:00:00`);
+  if (selectedWeekEnd < boundedStart) {
+    state.ganttWeekStart = startOfWeek(boundedStart);
+  } else if (selectedWeekStart > boundedEnd) {
+    state.ganttWeekStart = startOfWeek(boundedEnd);
+  }
+
+  const weekStart = startOfWeek(state.ganttWeekStart);
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 6);
+  const effectiveStart = weekStart < boundedStart ? boundedStart : weekStart;
+  const effectiveEnd = weekEnd > boundedEnd ? boundedEnd : weekEnd;
+  const days = dateRange(toIsoDate(effectiveStart), toIsoDate(effectiveEnd));
+
+  if (weekLabel) {
+    weekLabel.textContent = `${toIsoDate(effectiveStart)} to ${toIsoDate(effectiveEnd)}`;
+  }
   const headerDays = days.map((d) => `<th>${d.slice(5)}</th>`).join("");
   const rows = entries
     .map((entry) => {
@@ -558,12 +593,20 @@ document.getElementById("unavailable-next").addEventListener("click", () => {
   state.unavailableMonth = new Date(state.unavailableMonth.getFullYear(), state.unavailableMonth.getMonth() + 1, 1);
   renderPicker("unavailable");
 });
+document.getElementById("unavailable-clear").addEventListener("click", () => {
+  state.selectedUnavailable.clear();
+  renderPicker("unavailable");
+});
 document.getElementById("preferred-prev").addEventListener("click", () => {
   state.preferredMonth = new Date(state.preferredMonth.getFullYear(), state.preferredMonth.getMonth() - 1, 1);
   renderPicker("preferred");
 });
 document.getElementById("preferred-next").addEventListener("click", () => {
   state.preferredMonth = new Date(state.preferredMonth.getFullYear(), state.preferredMonth.getMonth() + 1, 1);
+  renderPicker("preferred");
+});
+document.getElementById("preferred-clear").addEventListener("click", () => {
+  state.selectedPreferred.clear();
   renderPicker("preferred");
 });
 document.getElementById("overview-prev").addEventListener("click", () => {
@@ -575,6 +618,20 @@ document.getElementById("overview-next").addEventListener("click", () => {
   state.overviewMonth = new Date(state.overviewMonth.getFullYear(), state.overviewMonth.getMonth() + 1, 1);
   renderOverviewCalendar(state.entries);
   renderGroupStats(state.entries);
+});
+document.getElementById("week-prev").addEventListener("click", () => {
+  if (!state.ganttWeekStart) state.ganttWeekStart = startOfWeek(new Date());
+  const next = new Date(state.ganttWeekStart);
+  next.setDate(next.getDate() - 7);
+  state.ganttWeekStart = next;
+  drawTimeline(state.entries);
+});
+document.getElementById("week-next").addEventListener("click", () => {
+  if (!state.ganttWeekStart) state.ganttWeekStart = startOfWeek(new Date());
+  const next = new Date(state.ganttWeekStart);
+  next.setDate(next.getDate() + 7);
+  state.ganttWeekStart = next;
+  drawTimeline(state.entries);
 });
 
 passcodeSubmit.addEventListener("click", onPasscodeSubmit);

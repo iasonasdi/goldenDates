@@ -119,6 +119,7 @@
                 <button id="unavailable-prev" type="button">Prev month</button>
                 <span id="unavailable-month-label"></span>
                 <button id="unavailable-next" type="button">Next month</button>
+                <button id="unavailable-clear" type="button">Clear selected</button>
               </div>
               <div id="unavailable-picker" class="month-grid"></div>
               <p id="unavailable-selected" class="selected-list"></p>
@@ -129,6 +130,7 @@
                 <button id="preferred-prev" type="button">Prev month</button>
                 <span id="preferred-month-label"></span>
                 <button id="preferred-next" type="button">Next month</button>
+                <button id="preferred-clear" type="button">Clear selected</button>
               </div>
               <div id="preferred-picker" class="month-grid"></div>
               <p id="preferred-selected" class="selected-list"></p>
@@ -175,10 +177,10 @@
 
         <h3>Group availability calendar</h3>
         <p class="legend">
-          <span class="legend-item heat-best">Best — most can come</span>
-          <span class="legend-item heat-good">Good</span>
-          <span class="legend-item heat-mixed">Mixed</span>
-          <span class="legend-item heat-worst">Hard — few can come</span>
+          <span class="legend-item heat-best">All free</span>
+          <span class="legend-item heat-good">Almost all free</span>
+          <span class="legend-item heat-mixed">Some conflicts</span>
+          <span class="legend-item heat-worst">Many conflicts</span>
         </p>
         <div class="date-picker-controls">
           <button id="overview-prev" type="button">Prev month</button>
@@ -188,6 +190,11 @@
         <div id="overview-calendar" class="month-grid overview-grid"></div>
 
         <h3>Availability by person (Gantt)</h3>
+        <div class="date-picker-controls">
+          <button id="week-prev" type="button">Prev week</button>
+          <span id="week-label"></span>
+          <button id="week-next" type="button">Next week</button>
+        </div>
         <div id="timeline"></div>
       </section>
 
